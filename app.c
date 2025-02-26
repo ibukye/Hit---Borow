@@ -5,14 +5,14 @@
 int digit;
 int numbers[2][MAX_DIGIT];
 int player = 0;     // Indicator of Player1, Player2
-int guess;
+int guess[MAX_DIGIT];
 
 // Prototype
 void menu();
 void get_number();
 void get_guess();
-int check_hit(int [MAX_DIGIT]);
-int check_borrow(int [MAX_DIGIT]);
+int check_hit();
+int check_borrow();
 
 
 int main() {
@@ -25,11 +25,8 @@ int main() {
     int hit = 0, borrow = 0;
     while (hit != digit) {
         get_guess();
-        int guessed_number[digit];
-        for (int i = 0; i < digit; i++) guessed_number[digit-i-1] = guess % 10; guess /= 10;
-        borrow = check_borrow(guessed_number);
-        hit = check_hit(guessed_number);
-        
+        hit = check_hit();
+        borrow = check_borrow();
         
         printf("HIT | BORROW\n %d  |   %d   \n", hit, borrow);
 
@@ -37,32 +34,39 @@ int main() {
             printf("Player %d WIN!!!\n", player+1);
             break;
         }
-        player = !(player);
+        player = !player;   // Change the player
     }
-    
     return 0;
 }
 
 void menu() {
     printf("Menu\n");
-    printf("Enter digit(3-4): ");
-    scanf("%d", &digit);
+    while (1) {
+        printf("Enter digit(3-4): ");
+        if (scanf("%d", &digit) == 1 && digit >= 3 && digit <= 4) break;
+        
+        puts("Invalid input. Enter again.\n");
+        while(getchar() != '\n');
+    }
+    puts("");
 }
 
 
 void get_number() {
-    for (int i = 0; i < 2; i++) {
-        int num;
-        printf("Player %d: ", i+1);
-        scanf("%d", &num);
-        for (int j = 0; j < digit; j++) numbers[i][digit-j-1] = num % 10; num /= 10;
-
+    for (int j = 0; j < 2; j++) {
+        for (int i = 0; i < digit; i++) {
+            printf("Player %d, Enter %d-th digit: ", j+1, i+1);
+            while (scanf("%d", &numbers[j][i]) != 1) {
+                printf("Invalid input. Enter again.\n");
+                while (getchar() != '\n');
+            } 
+        }
         puts("");
     }
 }
 
 
-int check_hit(int guess[MAX_DIGIT]) {
+int check_hit() {
     int hit = 0;
     for (int i = 0; i < digit; i++) {
         if (numbers[!player][i] == guess[i]) hit++;
@@ -70,11 +74,17 @@ int check_hit(int guess[MAX_DIGIT]) {
     return hit;
 }
 
-int check_borrow(int guess[MAX_DIGIT]) {
+int check_borrow() {
     int borrow = 0;
+    int checked[MAX_DIGIT] = {0};   // Store the numbers that already checked
+
     for (int i = 0; i < digit; i++) {
         for (int j = 0; j < digit; j++) {
-            if (i != j && numbers[!player][j] == guess[i]) borrow++;    // i != j の処理
+            if (i != j && numbers[!player][j] == guess[i] && !checked[j]) {
+                borrow++; 
+                checked[j] = 1; 
+                break;   // i != j の処理 & dont count the same number
+            }
         }
     }
     return borrow;
@@ -82,5 +92,7 @@ int check_borrow(int guess[MAX_DIGIT]) {
 
 void get_guess() {
     printf("Player %d, enter guess number: ", player+1);
-    scanf("%d", &guess);
+    for (int i = 0; i < digit; i++) {
+        scanf("%d", &guess[i]);
+    }
 }
