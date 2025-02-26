@@ -23,30 +23,43 @@ int main() {
 
 
     int hit = 0, borrow = 0;
-    while (hit != digit && borrow != digit) {
+    while (hit != digit) {
         get_guess();
         hit = check_hit();
         borrow = check_borrow();
-        player = !(player);
+        
         printf("HIT | BORROW\n %d  |   %d   \n", hit, borrow);
-    }
-    printf("Player %d WIN!!!\n", player);
 
+        if (hit == digit) {
+            printf("Player %d WIN!!!\n", player+1);
+            break;
+        }
+        player = !player;   // Change the player
+    }
     return 0;
 }
 
 void menu() {
     printf("Menu\n");
-    printf("Enter digit(3-4): ");
-    scanf("%d", &digit);
+    while (1) {
+        printf("Enter digit(3-4): ");
+        if (scanf("%d", &digit) == 1 && digit >= 3 && digit <= 4) break;
+        
+        puts("Invalid input. Enter again.\n");
+        while(getchar() != '\n');
+    }
+    puts("");
 }
 
 
 void get_number() {
     for (int j = 0; j < 2; j++) {
         for (int i = 0; i < digit; i++) {
-            printf("Player %d, Enter %d-th digit: ", j+1, i);
-            scanf("%d", &numbers[player][i]);
+            printf("Player %d, Enter %d-th digit: ", j+1, i+1);
+            while (scanf("%d", &numbers[j][i]) != 1) {
+                printf("Invalid input. Enter again.\n");
+                while (getchar() != '\n');
+            } 
         }
         puts("");
     }
@@ -56,16 +69,22 @@ void get_number() {
 int check_hit() {
     int hit = 0;
     for (int i = 0; i < digit; i++) {
-        if (numbers[player][i] == guess[i]) hit++;
+        if (numbers[!player][i] == guess[i]) hit++;
     }
     return hit;
 }
 
 int check_borrow() {
     int borrow = 0;
+    int checked[MAX_DIGIT] = {0};   // Store the numbers that already checked
+
     for (int i = 0; i < digit; i++) {
         for (int j = 0; j < digit; j++) {
-            if (i != j && numbers[player][j] == guess[i]) borrow++;    // i != j の処理
+            if (i != j && numbers[!player][j] == guess[i] && !checked[j]) {
+                borrow++; 
+                checked[j] = 1; 
+                break;   // i != j の処理 & dont count the same number
+            }
         }
     }
     return borrow;
